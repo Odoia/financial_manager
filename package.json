@@ -1,0 +1,26 @@
+{
+  "name": "financial_manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src/** test/** --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Odoia/financial_manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Odoia/financial_manager/issues"
+  },
+  "homepage": "https://github.com/Odoia/financial_manager#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.22.0",
+    "@typescript-eslint/parser": "^2.22.0",
+    "eslint": "^6.8.0"
+  }
+}
