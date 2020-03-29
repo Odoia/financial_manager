@@ -7,6 +7,6 @@ exports.up = (knex) => {
   })
 } 
   
-exports.down = (knes) => {
+exports.down = (knex) => {
   return knex.schema.dropTable('users')
 }

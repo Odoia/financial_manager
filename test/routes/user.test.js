@@ -2,6 +2,9 @@ const request = require('supertest')
 
 const app = require('../../src/app')
 
+const email = `${Date.now()}@mail.com`
+
+
 test('must list all users', () => {
   return request(app).get('/users')
     .then((res) => {
@@ -11,7 +14,6 @@ test('must list all users', () => {
 })
 
 test('must insert user successfully', () => {
-  const email = `${Date.now()}@mail.com`
   return request(app).post('/users')
     .send({ name: 'walter', email, passwd: '1234' })
     .then((res) => {
@@ -45,4 +47,22 @@ test('should not insert a user without password', (done) => {
       done()
     })
     .catch(err => done.fail(err))
+})
+
+test('should not insert a user without name', () => {
+  return request(app).post('/users')
+    .send({ email: 'mail@mail.com', passwd: '1234' })
+    .then((res) => {
+      expect(res.status).toBe(400)
+      expect(res.body.error).toBe('Name is require')
+    })
+})
+
+test('shoud not insert a duplicate email', () => {
+  return request(app).post('/users')
+    .send({ name: 'walter', email, passwd: '1234' })
+    .then((res) => {
+      expect(res.status).toBe(400)
+      expect(res.body.error).toBe('Duplicate Email')
+    })
 })
