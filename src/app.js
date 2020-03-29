@@ -1,21 +1,22 @@
 const app = require('express')()
-const bodyParser = require('body-parser')
+const consign = require('consign')
+const knex = require('knex')
+const knexfile = require('../knexfile')
+const knexLogger = require('knex-logger')
 
-app.use(bodyParser.json())
+app.db = knex(knexfile.test)
+
+app.use(knexLogger(app.db))
+
+consign({ cwd: 'src', verbose: false })
+  .include('./config/middlewares.js')
+  .then('./services')
+  .then('./routes')
+  .then('./config/routes.js')
+  .into(app)
 
 app.get('/', (req, res) => {
   res.status(200).send()
-})
-
-app.get('/users', (req, res) => {
-  const users = [
-    {name: 'john doe', email: 'jhon@mail.com'}
-  ]
-  res.status(200).json(users)
-})
-
-app.post('/users', (req, res) => {
-  res.status(201).json(req.body)
 })
 
 module.exports = app
