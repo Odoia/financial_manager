@@ -10,4 +10,5 @@ module.exports = (app) => {
 
   app.route('/accounts/:id')
     .get(app.routes.accounts.get)
+    .put(app.routes.accounts.update)
 }

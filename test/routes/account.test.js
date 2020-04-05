@@ -42,3 +42,14 @@ test('should return accounts by id', () => {
       expect(res.body.user_id).toBe(user.id)
     })
 })
+
+test('should update account', () => {
+  return app.db('accounts')
+    .insert({ name: 'Acc to update', user_id: user.id }, ['id'])
+    .then(acc => request(app).put(`${MAIN_ROUTE}/${acc[0].id}`)
+      .send({ name: 'Acc updated' }))
+    .then((res) => {
+      expect(res.status).toBe(200)
+      expect(res.body.name).toBe('Acc updated')
+    })
+})
