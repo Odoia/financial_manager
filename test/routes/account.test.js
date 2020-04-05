@@ -22,6 +22,18 @@ test('should insert an account successfully', () => {
     })
 })
 
+test('you should not enter an account without name', () => {
+  return request(app).post(MAIN_ROUTE)
+    .send({ user_id: user.id })
+    .then((result) => {
+      expect(result.status).toBe(400)
+      expect(result.body.error).toBe('Name is required')
+    })
+})
+
+test.skip('you should not enter a duplicate account for one user', () =>{
+})
+
 test('should list all accounts', () => {
   return app.db('accounts')
     .insert({ name: 'Acc list', user_id: user.id })
@@ -30,6 +42,10 @@ test('should list all accounts', () => {
       expect(res.status).toBe(200)
       expect(res.body.length).toBeGreaterThan(0)
     })
+})
+
+test.skip('should list only user account', () => {
+
 })
 
 test('should return accounts by id', () => {
@@ -52,6 +68,9 @@ test('should update account', () => {
       expect(res.status).toBe(200)
       expect(res.body.name).toBe('Acc updated')
     })
+})
+
+test.skip('you should not enter a update other account', () => {
 })
 
 test('should delete account', () => {
