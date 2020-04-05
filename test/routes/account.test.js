@@ -53,3 +53,12 @@ test('should update account', () => {
       expect(res.body.name).toBe('Acc updated')
     })
 })
+
+test('should delete account', () => {
+  return app.db('accounts')
+    .insert({ name: 'Acc to delete', user_id: user.id }, ['id'])
+    .then(acc => request(app).delete(`${MAIN_ROUTE}/${acc[0].id}`))
+    .then((res) => {
+      expect(res.status).toBe(204)
+    })
+})
