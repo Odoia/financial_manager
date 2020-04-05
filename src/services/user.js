@@ -1,8 +1,18 @@
+const bcrypt = require('bcrypt-nodejs')
 const ValidationError = require('../errors/ValidationError')
 
 module.exports = (app) => {
-  const findAll = (filter = {}) => {
-    return app.db('users').where(filter).select()
+  const findAll = () => {
+    return app.db('users').select(['id', 'name', 'email'])
+  }
+
+  const findOne = (filter = {}) => {
+    return app.db('users').where(filter).first()
+  }
+
+  const getPasswdHash = (passwd) => {
+    const salt = bcrypt.genSaltSync(10)
+    return bcrypt.hashSync(passwd, salt)
   }
 
   const save = async (user) => {
@@ -10,11 +20,13 @@ module.exports = (app) => {
     if (!user.email) throw new ValidationError('Email is require')
     if (!user.passwd) throw new ValidationError('Password is require')
     
-    const userDb = await findAll({ email: user.email })
-    if (userDb && userDb.length > 0) throw new ValidationError('Duplicate Email')
+    const userDb = await findOne({ email: user.email })
+    if (userDb) throw new ValidationError('Duplicate Email')
 
-    return app.db('users').insert(user, '*')
+    const newUser = { ...user }
+    newUser.passwd = getPasswdHash(user.passwd)
+    return app.db('users').insert(newUser,['id', 'name', 'email'])
   }
 
-  return { findAll, save }
+  return { findAll, findOne, save }
 }
