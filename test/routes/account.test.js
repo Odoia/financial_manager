@@ -1,4 +1,5 @@
 const request = require('supertest')
+const jwt = require('jwt-simple')
 const app = require('../../src/app')
 
 const MAIN_ROUTE = '/accounts'
@@ -11,11 +12,13 @@ beforeAll(async () => {
     passwd: '123' 
   })
   user = { ...res[0] }
+  user.token = jwt.encode(user, 'secret')
 })
 
 test('should insert an account successfully', () => {
   return request(app).post(MAIN_ROUTE)
     .send({ name: 'acc #1', user_id: user.id })
+    .set('authorization', `bearer ${user.token}`)
     .then((result) => {
       expect(result.status).toBe(201)
       expect(result.body.name).toBe('acc #1')
@@ -25,6 +28,7 @@ test('should insert an account successfully', () => {
 test('you should not enter an account without name', () => {
   return request(app).post(MAIN_ROUTE)
     .send({ user_id: user.id })
+    .set('authorization', `bearer ${user.token}`)
     .then((result) => {
       expect(result.status).toBe(400)
       expect(result.body.error).toBe('Name is required')
@@ -37,7 +41,8 @@ test.skip('you should not enter a duplicate account for one user', () =>{
 test('should list all accounts', () => {
   return app.db('accounts')
     .insert({ name: 'Acc list', user_id: user.id })
-    .then(() => request(app).get(MAIN_ROUTE))
+    .then(() => request(app).get(MAIN_ROUTE)
+    .set('authorization', `bearer ${user.token}`))
     .then((res) => {
       expect(res.status).toBe(200)
       expect(res.body.length).toBeGreaterThan(0)
@@ -51,7 +56,8 @@ test.skip('should list only user account', () => {
 test('should return accounts by id', () => {
   return app.db('accounts')
     .insert({ name: 'Acc by ID', user_id: user.id }, ['id'])
-    .then(acc => request(app).get(`${MAIN_ROUTE}/${acc[0].id}`))
+    .then(acc => request(app).get(`${MAIN_ROUTE}/${acc[0].id}`)
+    .set('authorization', `bearer ${user.token}`))
     .then((res) => {
       expect(res.status).toBe(200)
       expect(res.body.name).toBe('Acc by ID')
@@ -63,7 +69,8 @@ test('should update account', () => {
   return app.db('accounts')
     .insert({ name: 'Acc to update', user_id: user.id }, ['id'])
     .then(acc => request(app).put(`${MAIN_ROUTE}/${acc[0].id}`)
-      .send({ name: 'Acc updated' }))
+      .send({ name: 'Acc updated' })
+    .set('authorization', `bearer ${user.token}`))
     .then((res) => {
       expect(res.status).toBe(200)
       expect(res.body.name).toBe('Acc updated')
@@ -76,7 +83,8 @@ test.skip('you should not enter a update other account', () => {
 test('should delete account', () => {
   return app.db('accounts')
     .insert({ name: 'Acc to delete', user_id: user.id }, ['id'])
-    .then(acc => request(app).delete(`${MAIN_ROUTE}/${acc[0].id}`))
+    .then(acc => request(app).delete(`${MAIN_ROUTE}/${acc[0].id}`)
+    .set('authorization', `bearer ${user.token}`))
     .then((res) => {
       expect(res.status).toBe(204)
     })
