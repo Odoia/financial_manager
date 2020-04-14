@@ -1,6 +1,8 @@
 const request = require('supertest')
 const app = require('../../src/app')
 
+const MAIN_ROUTE_USERS = '/v1/users'
+
 test('should be creater user by signup', () => {
   return request(app).post('/auth/signup')
     .send({ name: 'jonh', email: `${Date.now()}@mail.com`, passwd: '123456' })
@@ -47,7 +49,7 @@ test('must not authenticate user with wrong password', () => {
 })
 
 test('should not access a protected route without a token', () => {
-  return request(app).get('/users')
+  return request(app).get(MAIN_ROUTE_USERS)
     .then((res) => {
       expect(res.status).toBe(401)
     })

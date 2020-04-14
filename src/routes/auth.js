@@ -1,3 +1,4 @@
+const express = require('express')
 const jwt = require('jwt-simple')
 const bcrypt = require('bcrypt-nodejs')
 const ValidationError = require('../errors/ValidationError')
@@ -5,7 +6,9 @@ const ValidationError = require('../errors/ValidationError')
 const secret = 'secret'
 
 module.exports = (app) => {
-  const signin = (req, res, next) => {
+  const router = express.Router()
+
+  router.post('/signin', (req, res, next) => {
     app.services.user.findOne({ email: req.body.email })
       .then((user) => {
         if (!user) throw new ValidationError('User or password invalid')
@@ -19,7 +22,16 @@ module.exports = (app) => {
           res.status(200).json({ token })
         } else throw new ValidationError('User or password invalid')
       }).catch(err => next(err))
-  }
+  })
 
-  return { signin }
+    router.post('/signup', async (req, res, next) => {
+      try {
+        const result = await app.services.user.save(req.body)
+        return res.status(201).json(result[0])
+      } catch (err) {
+        return next(err)
+      }
+  })
+
+  return router
 }
