@@ -4,8 +4,9 @@ const app = require('../../src/app')
 
 const MAIN_ROUTE = '/v1/accounts'
 let user
+let user2
 
-beforeAll(async () => {
+beforeEach(async () => {
   const res = await app.services.user.save({
     name: 'user account',
     email: `${Date.now()}@mail.com`,
@@ -13,11 +14,18 @@ beforeAll(async () => {
   })
   user = { ...res[0] }
   user.token = jwt.encode(user, 'secret')
+
+  const res2 = await app.services.user.save({
+    name: 'user2 account2',
+    email: `${Date.now()}2@mail.com`,
+    passwd: '123' 
+  })
+  user2 = { ...res2[0] }
 })
 
 test('should insert an account successfully', () => {
   return request(app).post(MAIN_ROUTE)
-    .send({ name: 'acc #1', user_id: user.id })
+    .send({ name: 'acc #1' })
     .set('authorization', `bearer ${user.token}`)
     .then((result) => {
       expect(result.status).toBe(201)
@@ -27,7 +35,7 @@ test('should insert an account successfully', () => {
 
 test('you should not enter an account without name', () => {
   return request(app).post(MAIN_ROUTE)
-    .send({ user_id: user.id })
+    .send({})
     .set('authorization', `bearer ${user.token}`)
     .then((result) => {
       expect(result.status).toBe(400)
@@ -38,19 +46,17 @@ test('you should not enter an account without name', () => {
 test.skip('you should not enter a duplicate account for one user', () =>{
 })
 
-test('should list all accounts', () => {
-  return app.db('accounts')
-    .insert({ name: 'Acc list', user_id: user.id })
-    .then(() => request(app).get(MAIN_ROUTE)
-    .set('authorization', `bearer ${user.token}`))
+test('should list only user account', () => {
+  return app.db('accounts').insert([
+    {name: 'acc1', user_id: user.id},
+    {name: 'acc2', user_id: user2.id}
+  ]).then(() => request(app).get(MAIN_ROUTE)
+    .set('authorization', `bearer ${user.token}`)
     .then((res) => {
       expect(res.status).toBe(200)
-      expect(res.body.length).toBeGreaterThan(0)
-    })
-})
-
-test.skip('should list only user account', () => {
-
+      expect(res.body.length).toBe(1)
+      expect(res.body[0].name).toBe('acc1')
+    }))
 })
 
 test('should return accounts by id', () => {
