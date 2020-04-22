@@ -43,7 +43,15 @@ test('you should not enter an account without name', () => {
     })
 })
 
-test.skip('you should not enter a duplicate account for one user', () =>{
+test('you should not enter a duplicate account for one user', () =>{
+  return app.db('accounts').insert({ name: 'duplicate acc', user_id: user.id })
+    .then(() => request(app).post(MAIN_ROUTE)
+    .set('authorization', `bearer ${user.token}`)
+      .send({ name: 'duplicate acc' }))
+    .then((res) => {
+      expect(res.status).toBe(400)
+      expect(res.body.error).toBe('Duplicated name')
+    })
 })
 
 test('should list only user account', () => {
