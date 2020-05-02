@@ -91,11 +91,24 @@ test('should update account', () => {
     })
 })
 
-test('you should not enter a update other account', () => {
+test('you should not return other account', () => {
   return app.db('accounts')
     .insert({ name: 'Acc user #2', user_id: user2.id }, ['id'])
     .then(acc => request(app).get(`${MAIN_ROUTE}/${acc[0].id}`)
         .set('authorization', `bearer ${user.token}`))
+    .then((res) => {
+      expect(res.status).toBe(403)
+      expect(res.body.error).toBe('error 403')
+    }) 
+})
+
+
+test('you should not enter a update other account', () => {
+  return app.db('accounts')
+    .insert({ name: 'Acc user #2', user_id: user2.id }, ['id'])
+    .then(acc => request(app).put(`${MAIN_ROUTE}/${acc[0].id}`)
+      .send({ name: 'Acc updated' })
+      .set('authorization', `bearer ${user.token}`))
     .then((res) => {
       expect(res.status).toBe(403)
       expect(res.body.error).toBe('error 403')
@@ -110,4 +123,16 @@ test('should delete account', () => {
     .then((res) => {
       expect(res.status).toBe(204)
     })
+})
+
+
+test('you should not delete other account', () => {
+  return app.db('accounts')
+    .insert({ name: 'Acc user #2', user_id: user2.id }, ['id'])
+    .then(acc => request(app).delete(`${MAIN_ROUTE}/${acc[0].id}`)
+      .set('authorization', `bearer ${user.token}`))
+    .then((res) => {
+      expect(res.status).toBe(403)
+      expect(res.body.error).toBe('error 403')
+    }) 
 })
